@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "youtube-live"
+version = "0.1.0"
+description = "Kafka Producer"
+authors = ["Jimin Yoo <jmy0819_@naver.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pafy = "^0.5.5"
+pytchat = "^0.5.5"
+confluent-kafka = "^2.8.2"
+dotenv = "^0.9.9"
+youtube-dl = "^2021.12.17"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

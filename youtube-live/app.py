@@ -1,3 +1,6 @@
+"""
+Python worker as a Kafka producer for sending timestamps of YouTube live chats
+"""
 import argparse
 import logging
 import os
