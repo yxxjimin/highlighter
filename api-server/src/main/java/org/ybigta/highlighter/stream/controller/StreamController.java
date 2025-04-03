@@ -31,4 +31,9 @@ public class StreamController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No such worker");
     }
+
+    @GetMapping
+    public String ping() {
+        return "pong";
+    }
 }
