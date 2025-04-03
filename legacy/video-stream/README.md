@@ -1,4 +1,8 @@
 ## Overview
+
+> [!Warning]
+> Legacy experiments for extracting video binary data via **Streamlink**. See [API Server](../../api-server/) for current version.
+
 <img src="img/flow.svg">
 
 - [x] Streamlink on EC2
