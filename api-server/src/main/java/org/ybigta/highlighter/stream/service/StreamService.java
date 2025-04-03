@@ -4,13 +4,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.ybigta.highlighter.stream.dto.response.ListStreamsResponse;
+import org.ybigta.highlighter.topic.TopicConfig;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -20,7 +25,6 @@ public class StreamService {
     private final KafkaTemplate<String, byte[]> kafkaTemplate;
     private final ConcurrentHashMap<String, Process> workerProcesses = new ConcurrentHashMap<>();
 
-    private static final String KAFKA_TOPIC = "livestream";
     private static final String VIDEO_PREFIX = "video-";
     private static final String CHAT_PREFIX = "chat-";
 
@@ -43,7 +47,7 @@ public class StreamService {
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(videoWorker.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
-                        kafkaTemplate.send(KAFKA_TOPIC, videoKey, line.getBytes());
+                        kafkaTemplate.send(TopicConfig.VIDEO_TOPIC, videoKey, line.getBytes());
                     }
                 } catch (Exception e) {
                     log.error("Error reading buffer: {}", e.getMessage());
@@ -86,6 +90,22 @@ public class StreamService {
         return isVideoDestroyed && isChatDestroyed;
     }
 
+    public ListStreamsResponse getAllStreams() {
+        Set<String> uniqueIds = workerProcesses.keySet().stream()
+                .map((key) -> key.replaceFirst("^(?:" + VIDEO_PREFIX + "|" + CHAT_PREFIX + ")", ""))
+                .collect(Collectors.toSet());
+
+        return new ListStreamsResponse(
+                uniqueIds.stream()
+                        .map((id) -> {
+                            boolean isVideoHealthy = isProcessHealthy(VIDEO_PREFIX + id);
+                            boolean isChatHealthy = isProcessHealthy(CHAT_PREFIX + id);
+                            return Map.of(id, isVideoHealthy && isChatHealthy);
+                        })
+                        .toList()
+        );
+    }
+
     private static String parseVideoId(String url) {
         try {
             URI uri = new URI(url);
@@ -102,5 +122,10 @@ public class StreamService {
             log.warn("Invalid URL: {}", url);
         }
         return null;
+    }
+
+    private boolean isProcessHealthy(String key) {
+        Process process = workerProcesses.get(key);
+        return process != null && process.isAlive();
     }
 }

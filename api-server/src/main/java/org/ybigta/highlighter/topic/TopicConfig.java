@@ -8,9 +8,12 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class TopicConfig {
 
+    public static final String VIDEO_TOPIC = "livestream";
+    public static final String CHAT_TOPIC = "chats";
+
     @Bean
     public NewTopic videoTopic() {
-        return TopicBuilder.name("livestream")
+        return TopicBuilder.name(VIDEO_TOPIC)
                 .partitions(3)
                 .replicas(1)
                 .compact()
@@ -19,7 +22,7 @@ public class TopicConfig {
 
     @Bean
     public NewTopic chatTopic() {
-        return TopicBuilder.name("chats")
+        return TopicBuilder.name(CHAT_TOPIC)
                 .partitions(3)
                 .replicas(1)
                 .compact()
